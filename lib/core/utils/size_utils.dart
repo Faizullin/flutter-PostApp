@@ -9,8 +9,8 @@ Size size = WidgetsBinding.instance.window.physicalSize /
 // Caution! If you think these are static values and are used to build a static UI,  you mustn’t.
 // These are the Viewport values of your Figma Design.
 // These are used in the code as a reference to create your UI Responsively.
-const num FIGMA_DESIGN_WIDTH = 390;
-const num FIGMA_DESIGN_HEIGHT = 844;
+const num FIGMA_DESIGN_WIDTH = 360;
+const num FIGMA_DESIGN_HEIGHT = 800;
 const num FIGMA_DESIGN_STATUS_BAR = 0;
 
 ///This method is used to get device viewport width.

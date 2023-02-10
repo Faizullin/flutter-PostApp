@@ -1,38 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:getwidget/components/search_bar/gf_search_bar.dart';
 import 'package:post_app/models/post.dart';
-import 'package:post_app/services/api_post.dart';
-import 'package:post_app/widgets/SidebarDrawer.dart';
+import 'package:post_app/services/post_service.dart';
+import 'package:post_app/widgets/sidebar_drawer.dart';
 import 'package:quill_html_editor/quill_html_editor.dart';
 
+class PostShowArguements {
+  final String id;
+  final String title;
+
+  PostShowArguements({required this.title, required this.id});
+}
 
 class PostShowPage extends StatefulWidget {
   final String postId;
+  final String title;
 
-  const PostShowPage({super.key,required this.postId});
+  const PostShowPage({super.key,required this.postId, required this.title});
 
   @override
   State<PostShowPage> createState() => _PostShowPage();
 }
 
 class _PostShowPage extends State<PostShowPage> {
-  late Future<Post> futurePost;
+  final PostService postService = PostService();
+  late Future<Post> futurePost = postService.getPostById(widget.postId);
+  
   final QuillEditorController controller = QuillEditorController();
 
   @override
   void initState() {
     super.initState();
-    futurePost = fetchPost(widget.postId);
+    // final PostShowArguements args = ModalRoute.of(context)!.settings.arguments as PostShowArguements;
+    // futurePost = fetchPost(args.id);
   }
 
 
 
   @override
   Widget build(BuildContext context) {
-
+    //final PostShowArguements args = ModalRoute.of(context)!.settings.arguments as PostShowArguements;
     return Scaffold(
       appBar: AppBar(
-        title: Text("TItle"),
+        title: Text(widget.title),
       ),
       drawer: const SidebarDrawer(),
       body: Center(
@@ -40,7 +49,6 @@ class _PostShowPage extends State<PostShowPage> {
           future: futurePost,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              print(snapshot.data!.body);
               controller.setText(snapshot.data!.body);
               return QuillHtmlEditor(controller: controller, height: 50);
               // return Container(
@@ -50,8 +58,6 @@ class _PostShowPage extends State<PostShowPage> {
               // );
             } else if (snapshot.hasError) {
               return Text('${snapshot.error}');
-            } else {
-              return const Text('Unknown result');
             }
             return const CircularProgressIndicator();
           },

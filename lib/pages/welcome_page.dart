@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:post_app/widgets/BottomNavigation.dart';
+import 'package:post_app/widgets/bottom_navigation.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key, required this.title});

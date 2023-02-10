@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:post_app/services/auth_provider.dart';
-import 'package:post_app/widgets/BottomNavigation.dart';
+import 'package:post_app/widgets/bottom_navigation.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -40,18 +40,6 @@ class _LoginPage extends State<LoginPage> {
             key: _formKey,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 60.0),
-                  child: Center(
-                    child: Container(
-                        width: 200,
-                        height: 150,
-                        /*decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(50.0)),*/
-                        child: Image.asset('asset/images/flutter-logo.png')),
-                  ),
-                ),
                 Padding(
                  //padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 0),
                   padding: const EdgeInsets.symmetric(horizontal: 15),

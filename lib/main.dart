@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:post_app/pages/home_page.dart';
-import 'package:post_app/pages/post/create_page.dart';
-import 'package:post_app/pages/post/index_page.dart';
-import 'package:post_app/pages/post/post_show.dart';
+import 'package:post_app/core/app_export.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const HomePage(),
-        '/post': (context) => const PostIndexPage(),
-        '/post/create': (context) => const PostCreatePage(),
-        //'/post/:id': (context) => const PostShowPage(),
-      },
+      initialRoute: AppRoutes.initialRoute,
+      routes: AppRoutes.routes,
     );
   }
 }

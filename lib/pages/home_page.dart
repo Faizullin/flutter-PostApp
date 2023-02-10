@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:post_app/widgets/BottomNavigation.dart';
-import 'package:post_app/widgets/SidebarDrawer.dart';
+import 'package:post_app/widgets/bottom_navigation.dart';
+import 'package:post_app/widgets/sidebar_drawer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key,});

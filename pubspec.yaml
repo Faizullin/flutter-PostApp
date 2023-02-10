@@ -50,6 +50,9 @@ dependencies:
   quill_html_editor: ^2.0.2
   vsc_quill_delta_to_html: ^1.0.0+1
   quill_markdown: ^0.1.0
+  shared_preferences: ^2.0.17
+  flutter_svg: ^2.0.0+1
+  cached_network_image: ^3.2.3
 
 dev_dependencies:
   flutter_test:

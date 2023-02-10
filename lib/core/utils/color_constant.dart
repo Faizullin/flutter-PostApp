@@ -2,17 +2,22 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class ColorConstant {
-  static Color gray500 = fromHex('#a8a8a8');
-
-  static Color lightBlue70001 = fromHex('#008bd7');
-
-  static Color lightGreen500 = fromHex('#92de40');
-
-  static Color lightBlue700 = fromHex('#0086c8');
 
   static Color whiteA700 = fromHex('#ffffff');
+  static Color gray100 = fromHex('#f6f6f6');
+  static Color gray700 = fromHex('#555555');
+  static Color teal600 = fromHex('#008374');
+  static Color gray900 = fromHex('#222222');//defaylt
+  static Color deepOrange400 = fromHex('#f96f59');
 
-  static Color gray100 = fromHex('#f2f2f2');
+
+  // static Color gray100 = fromHex('#f2f2f2');{
+  // --font-default: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  // --font-primary: "Montserrat", sans-serif;
+  // --font-secondary: "Poppins", sans-serif;
+  // }
+
+  static Color orangeSecondary = fromHex('#f85a40');
 
   static Color fromHex(String hexString) {
     final buffer = StringBuffer();
