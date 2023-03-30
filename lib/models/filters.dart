@@ -18,3 +18,22 @@ class Filters {
   }
 }
 
+class SelectFilters {
+  List<Category> categories = [];
+  List<Tag> tags = [];
+  String? searchQuery;
+
+  SelectFilters({
+    required this.categories,
+    required this.tags,
+    this.searchQuery,
+  });
+
+  factory SelectFilters.fromJson(Map<String, dynamic> json) {
+    return SelectFilters(
+      categories: json['categories'].map<Category>((el) => Category.fromJson(el)).toList(),
+      tags: json['tags'].map<Tag>((el) => Tag.fromJson(el)).toList(),
+    );
+  }
+}
+

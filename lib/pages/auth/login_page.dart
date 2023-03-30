@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:post_app/core/app_export.dart';
 import 'package:post_app/services/auth_provider.dart';
-import 'package:post_app/widgets/bottom_navigation.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final Function? onResult;
+
+  const LoginPage({super.key, this.onResult});
   @override
   State<LoginPage> createState() => _LoginPage();
 }
@@ -13,6 +16,7 @@ class _LoginPage extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String _errorMessage = '';
 
   @override
   void initState() {
@@ -32,9 +36,6 @@ class _LoginPage extends State<LoginPage> {
       appBar: AppBar(
         title: const Text("Login"),
       ),
-      bottomNavigationBar: MyBottomNavigationBar(
-        selectedIndex: 2,
-      ),
       body: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -42,7 +43,12 @@ class _LoginPage extends State<LoginPage> {
               children: [
                 Padding(
                  //padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 0),
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  padding: getPadding(
+                    left:15.0,
+                    right: 15.0,
+                    top: 60.0,
+                    bottom: 20,
+                  ),
                   child: TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -59,8 +65,12 @@ class _LoginPage extends State<LoginPage> {
                   ),
                 ),
                 Padding(
-                  //padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 0),
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  padding: getPadding(
+                    left:15.0,
+                    right: 15.0,
+                    top: 20.0,
+                    bottom: 10.0,
+                  ),
                   child: TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -77,47 +87,93 @@ class _LoginPage extends State<LoginPage> {
                     },
                   ),
                 ),
-
-                TextButton(
-                  child: const Text(
-                    'Forgot Password',
-                    style: TextStyle(color: Colors.blue, fontSize: 15),
+                SizedBox(height: getVerticalSize(16)),
+                if(_errorMessage.isNotEmpty)
+                  Container(
+                    padding: getPadding(
+                      left:14,
+                    ),
+                    child: Text(
+                      _errorMessage,
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: getFontSize(16),
+                      ),
+                    ),
                   ),
-                  onPressed: () {
+                TextButton(
+                  child: Text(
+                    'Forgot Password',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: getFontSize(15),
+                    ),
+                  ),
+                  onPressed: () async {
+                    const String url = 'https://www.example.com';
+                    if (await canLaunchUrlString(url)) {
+                      await launchUrlString(url);
+                    } else {
+                      throw 'Could not launch $url';
+                    }
                   },
                 ),
                 Container(
-                  height: 50,
-                  width: 250,
+                  height: getVerticalSize(50),
+                  width: getHorizontalSize(230),
                   decoration: BoxDecoration(
                     color: Colors.blue,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(getHorizontalSize(20)),
                   ),
                   child: TextButton(
-                    child: const Text(
+                    child: Text(
                       'Login',
-                      style: TextStyle(color: Colors.white, fontSize: 25),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: getFontSize(25),
+                      ),
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         Provider.of<AuthProvider>(context, listen:false).login(
                           email: _emailController.text,
                           password: _passwordController.text,
-                        );
-                        Navigator.pop(context);
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //     const SnackBar(
-                        //         content: Text('Processing Data'),
-                        //     ),
-                        // );
+                        ).then((Map<String, dynamic> result ) {
+                          if(result['success'] == false){
+                            setState(() {
+                              _errorMessage = result['errors'];
+                            });
+                          } else if (result['success'] == true){
+                            if(widget.onResult != null){
+                              widget.onResult!(true);
+                            } else {
+                              Navigator.pushNamed(context, AppRoutes.authProfile);
+                            }
+                          }
+                        });
                       }
                     },
                   ),
                 ),
-                const SizedBox(
-                  height: 130,
+                SizedBox(
+                  height: getVerticalSize(130),
                 ),
-                const Text('New User? Create Account')
+                InkWell(
+                  child: Text(
+                    'New User? Create Account',
+                    style: TextStyle(
+                      fontSize: getFontSize(15),
+                    ),
+                  ),
+                  onTap: () async {
+                    const String url = 'https://www.example.com';
+                    if (await canLaunchUrlString(url)) {
+                      await launchUrlString(url);
+                    } else {
+                      throw 'Could not launch $url';
+                    }
+                  },
+                ),
               ],
             ),
         ),

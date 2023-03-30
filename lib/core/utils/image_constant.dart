@@ -1,13 +1,11 @@
 class ImageConstant {
-  static String imgScreenshot20230123081814219x390 =
-      'assets/images/img_screenshot20230123081814_219x390.png';
+  static String imgMenu = 'assets/images/img_menu.svg';
 
-  static String imgScreenshot20230123081814 =
-      'assets/images/img_screenshot20230123081814.png';
+  static String imgArrowleft24x24 = 'assets/images/img_arrowleft_24x24.svg';
 
-  static String imgTicket = 'assets/images/img_ticket.svg';
+  static String imgSearch = 'assets/images/img_search.svg';
 
-  static String imageNotFound = 'assets/images/image_not_found.png';
+  static String imgAboutUsLogo = 'assets/images/img_about_us_logo.svg';
 
-  static String imgUnknown = 'assets/images/unknown.jpg';
+  static String imgUnknown = 'assets/images/img_unknown.jpg';
 }

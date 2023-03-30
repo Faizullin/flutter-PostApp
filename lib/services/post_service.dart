@@ -3,11 +3,22 @@ import 'package:post_app/core/app_export.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
 import 'package:http/http.dart' as http;
+import 'package:post_app/services/auth_provider.dart';
 
 class PostService {
-  Future<Post> getPostById(String id) async {
-    final response = await http.get(Uri.parse('${Env.baseUrl}/posts/$id'));
+  final AuthProvider? authProvider;
 
+  PostService({this.authProvider});
+
+
+  int _currentPage = 1;
+  void setPage(int page) {
+    _currentPage = page;
+  }
+  int get currentPage => _currentPage;
+
+  Future<Post> getPostById(String id) async {
+    final response = await http.get(Uri.parse('${Env.baseUrl}/api/post/$id'));
     if (response.statusCode == 200) {
       return Post.fromJson(jsonDecode(response.body));
     } else {
@@ -16,19 +27,22 @@ class PostService {
   }
 
   Future<List<Post>> getAllPosts() async {
-    final response = await http.get(Uri.parse('${Env.baseUrl}/posts'));
+    final response = await http.get(Uri.parse('${Env.baseUrl}/api/post'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
-      return jsonResponse.map((data) => Post.fromJson(data)).toList();
+      return jsonResponse.map<Post>((data) => Post.fromJson(data)).toList();
     } else {
       throw Exception('Failed to load album');
     }
   }
 
-  Future<Post> store(Map<String, dynamic> body, String token) async {
+
+
+  Future<Post> store(Map<String, dynamic> body,String token) async {
     final response = await http.post(
-      Uri.parse('${Env.baseUrl}/posts'),
+      //Uri.parse('${Env.baseUrl}/post'),
+      Uri.parse('${Env.baseUrl}/api/post'),
       headers: <String, String>{
         'Context-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -44,7 +58,7 @@ class PostService {
   }
 
   Future<Filters> getAllFilters() async {
-    final response = await http.get(Uri.parse('${Env.baseUrl}/filters'));
+    final response = await http.get(Uri.parse('${Env.baseUrl}/api/post/filters'));
 
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -54,20 +68,46 @@ class PostService {
     }
   }
 
-  Future<List<Post>> applyFilters(Filters filters) async {
-    String url = '${Env.baseUrl}/posts?';
+  Future<List<Post>> applyFilters(SelectFilters filters) async {
+    String url = '${Env.baseUrl}/api/post?';
     if (filters.categories.isNotEmpty) {
-      url +=
-          "category.slug=${filters.categories[filters.categories.length - 1].slug}&";
+      url += "category=${filters.categories[filters.categories.length - 1].slug}&";
     }
     for (int i = 0; i < filters.tags.length; i++) {
-      url += "tag[$i].slug=${filters.tags[i].slug}&";
+      url += "tag[$i]=${filters.tags[i].slug}&";
+    }
+    if(filters.searchQuery != null && filters.searchQuery!.isNotEmpty){
+      url += "title=${filters.searchQuery}&";
     }
     final response = await http.get(
       Uri.parse(url),
       headers: {"Accept": "application/json"},
     );
 
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body);
+      return jsonResponse.map((data) => Post.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load album');
+    }
+  }
+
+  Future<List<Post>> applySearchSubmit(String value) async {
+    final response = await http.get(
+      Uri.parse('${Env.baseUrl}/api/post?search=$value'),
+    );
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body);
+      return jsonResponse.map((data) => Post.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load album');
+    }
+  }
+
+  Future<List<Post>> addToFiltersAndApply(Map<String,String> body) async {
+    final response = await http.get(
+      Uri.parse('${Env.baseUrl}/api/post?sort_order=${body['sort_order']}&sort_column=${body['sort_column']}'),
+    );
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((data) => Post.fromJson(data)).toList();
