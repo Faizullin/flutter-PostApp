@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:post_app/core/app_export.dart';
-import 'package:post_app/models/comment.dart';
 import 'package:http/http.dart' as http;
-import 'package:post_app/models/like.dart';
 
 class LikeService {
   final String postId;
   const LikeService({required this.postId});
 
-  Future<Map> likePost(String postId, String token) async {
+  Future<Map<String, dynamic>> likePost(String token) async {
     final response = await http.post(
       Uri.parse('${Env.baseUrl}/api/like'),
       headers:<String, String> {
@@ -17,14 +15,14 @@ class LikeService {
         'Content-Type': 'application/json'
       },
       body: jsonEncode({
-        'type': 'post',
-        'id': postId,
+        'post': postId,
       }),
     );
     if (response.statusCode == 200) {
       Map<String,dynamic> resp = jsonDecode(response.body);
       return {
-        'likes_count': int.parse(resp['likes_count']),
+        'count': resp['count'],
+        'status': resp['status'],
       };
     } else {
       throw Exception('Failed to load album');

@@ -49,7 +49,7 @@ class _PostEditPage extends State<PostEditPage> {
   final _formKey = GlobalKey<FormState>();
   final PostService postService = PostService();
   late Future<Filters> futureFilters = postService.getAllFilters();
-  late Future<Post> futurePost = postService.getPostById(widget.id);
+  late Future<Post> futurePost;
 
 
   bool showFeatureImage = false;
@@ -70,7 +70,6 @@ class _PostEditPage extends State<PostEditPage> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   QuillController bodyController = QuillController.basic();
-
 
   setPostValues(Post post){
     titleController.text = post.title;
@@ -260,6 +259,8 @@ class _PostEditPage extends State<PostEditPage> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    futurePost = postService.getPostById(widget.id,auth.token);
+
     if (!auth.isAuthenticated) {
       Navigator.pushReplacementNamed(context, AppRoutes.authLogin);
     }

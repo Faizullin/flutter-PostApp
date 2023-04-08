@@ -19,6 +19,8 @@ class CommentService {
   }
 
   Future<Comment> store(Map<String,dynamic> body, String token) async {
+    body['post_id'] = postId;
+    body['parent_id'] = null;
     final response = await http.post(
       Uri.parse('${Env.baseUrl}/api/comment/add'),
       headers:<String, String> {
@@ -70,7 +72,7 @@ class CommentService {
   }
   Future<Comment> update(Map<String,dynamic> body,String token) async {
     final response = await http.patch(
-      Uri.parse('${Env.baseUrl}/api/comment/${body['id']}/edit'),
+      Uri.parse('${Env.baseUrl}/api/comment/${body['id']}'),
       headers:<String, String> {
         'Context-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',

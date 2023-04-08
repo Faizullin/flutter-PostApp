@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 
 class CommentCreateForm extends StatefulWidget{
   final CommentService service;
-  const CommentCreateForm({super.key, required this.service});
+  final Function updateComments;
+  final Function showAuthAlertDialog;
+  const CommentCreateForm({super.key, required this.service, required this.showAuthAlertDialog, required this.updateComments});
 
   @override
   State createState() => _CommentCreateForm();
@@ -67,27 +69,31 @@ class _CommentCreateForm extends State<CommentCreateForm> {
               ),
               CustomButton(
                 height: getVerticalSize(
-                  55,
+                  60,
                 ),
                 width: getHorizontalSize(
-                  100,
+                  200,
                 ),
                 text: "Post Comment",
                 margin: getMargin(
                   top: 30,
                 ),
-                onTap: () async {
+                onTap: () {
                   if (formKey.currentState!.validate()) {
-                    final auth = Provider.of<AuthProvider>(
-                        context, listen: false);
-                    if (auth.isAuthenticated) {
-                      Map<String, dynamic> body = {
-                        'body': _commentController.text,
-                      };
-                      widget.service.store(body, auth.token);
-                    } else {
-                      Navigator.pushNamed(context, AppRoutes.authLogin);
+                    final auth = Provider.of<AuthProvider>(context, listen: false);
+                    if (!auth.isAuthenticated) {
+                      widget.showAuthAlertDialog();
                     }
+                    Map<String, dynamic> body = {
+                      'message': _commentController.text,
+                    };
+                    widget.service.store(body, auth.token).then((value) {
+                      setState(() {
+                        _commentController.text = '';
+                      });
+                      widget.updateComments();
+                    });
+
                   }
                 },
               ),

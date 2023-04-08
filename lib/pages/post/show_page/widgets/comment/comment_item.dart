@@ -95,17 +95,17 @@ class _CommentItem extends State<CommentItem> {
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: getPadding(
-                          top: 4,
-                        ),
-                        child: Text(
-                          "01 Jan,2022",
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.left,
-                          style: AppStyle.txtInterMedium12,
-                        ),
-                      ),
+                      // Padding(
+                      //   padding: getPadding(
+                      //     top: 4,
+                      //   ),
+                      //   child: Text(
+                      //     "01 Jan,2022",
+                      //     overflow: TextOverflow.ellipsis,
+                      //     textAlign: TextAlign.left,
+                      //     style: AppStyle.txtInterMedium12,
+                      //   ),
+                      // ),
                       Container(
                         width: getHorizontalSize(
                           242,
@@ -123,14 +123,15 @@ class _CommentItem extends State<CommentItem> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          IconButton(
-                            icon: showReplies ? const Icon(Icons.arrow_upward_rounded) : const Icon(Icons.arrow_downward_rounded),
-                            onPressed: (){
-                              setState(() {
-                                showReplies = !showReplies;
-                              });
-                            },
-                          ),
+                          if(widget.comment.replies != null && widget.comment.replies!.isNotEmpty)
+                            IconButton(
+                              icon: showReplies ? const Icon(Icons.arrow_upward_rounded) : const Icon(Icons.arrow_downward_rounded),
+                              onPressed: (){
+                                setState(() {
+                                  showReplies = !showReplies;
+                                });
+                              },
+                            ),
                           if(canEditDelete)
                             IconButton(
                               icon: Icon(

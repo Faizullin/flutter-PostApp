@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:post_app/models/post.dart';
 import 'package:post_app/core/app_export.dart';
+import 'package:post_app/pages/post/edit_page/edit_page.dart';
 import 'package:post_app/pages/post/show_page/show_page.dart';
+import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/widgets/custom_image_view.dart';
+import 'package:provider/provider.dart';
 
 class PostItem extends StatelessWidget {
   final Post post;
-  const PostItem({super.key, required this.post});
+  final bool canEdit;
+  const PostItem({super.key, required this.post, required this.canEdit});
 
   @override
   Widget build(BuildContext context){
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    bool canEditByUser = false;
+    if(auth.isAuthenticated && canEdit) {
+      if(auth.user?.id == post.author?.id){
+        canEditByUser = true;
+      }
+    }
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
@@ -29,8 +40,8 @@ class PostItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          (post.imageUrl!=null) ? CustomImageView(
-            url: '${Env.baseUrl}${post.imageUrl}',
+          (post.imageUrl!=null && post.imageUrl!.isNotEmpty) ? CustomImageView(
+            url: post.imageUrl,
             height: getVerticalSize(240.00,),
             width: getHorizontalSize(336.00,),
             onTap: () {
@@ -99,7 +110,6 @@ class PostItem extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -119,7 +129,7 @@ class PostItem extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Marina Doe",
+                            post.author?.name ?? "Unknown",
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.left,
                             style: AppStyle.txtInterMedium20,
@@ -138,6 +148,23 @@ class PostItem extends StatelessWidget {
                     ),
                   ],
                 ),
+                if(canEditByUser)
+                  Padding(
+                    padding: getPadding(
+                      top: 15,
+                    ),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => PostEditPage(
+                            id: post.id.toString(),
+                            title: "Edit Post: ${post.title}",
+                          ),
+                        ));
+                      },
+                      child: const Text("Edit"),
+                    ),
+                  ),
               ],
             ),
           ),

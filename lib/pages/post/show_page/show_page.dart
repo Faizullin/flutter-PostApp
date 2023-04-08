@@ -7,7 +7,9 @@ import 'package:post_app/models/post.dart';
 import 'package:post_app/models/tag.dart';
 import 'package:post_app/pages/post/index_page/index_page.dart';
 import 'package:post_app/pages/post/show_page/widgets/comment/comment_list.dart';
-import 'package:post_app/pages/post/index_page/widgets/filters_sidebar_drawer/filters_sidebar_drawer.dart';
+import 'package:post_app/services/like_service.dart';
+import 'package:post_app/widgets/filters_sidebar_drawer/filters_sidebar_drawer.dart';
+import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/comment_service.dart';
 import 'package:post_app/services/post_service.dart';
 import 'package:post_app/theme/quill_style.dart';
@@ -15,6 +17,7 @@ import 'package:post_app/widgets/app_bar/appbar_filterable.dart';
 import 'package:post_app/widgets/breadcrumb.dart';
 import 'package:post_app/widgets/custom_image_view.dart';
 import 'package:post_app/widgets/sidebar_drawer.dart';
+import 'package:provider/provider.dart';
 
 
 class PostShowPage extends StatefulWidget {
@@ -30,24 +33,23 @@ class _PostShowPage extends State<PostShowPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final PostService postService = PostService();
   late CommentService commentService = CommentService(postId: widget.id);
-  late Future<Post> futurePost = postService.getPostById(widget.id);
+  late LikeService likeService = LikeService(postId: widget.id);
+
+  late Future<Post> futurePost;
   SelectFilters selectFilters = SelectFilters(categories: [], tags: []);
   late Future<List<Post>> futurePosts = postService.getAllPosts();
   late Future<Filters> futureFilters = postService.getAllFilters();
 
-
+  int likesCount = 0;
+  bool isLikedByCurrentUser = false;
   bool isSearchVisible = false;
+  bool firstLoaded = false;
 
   @override
   Widget build(BuildContext context) {
-    // final args = ModalRoute.of(context)!.settings.arguments != null ? ModalRoute.of(context)!.settings.arguments as PostIndexArguments : PostIndexArguments();
-    // if(widget.selectFilters != null ){
-    //   futurePosts = postService.applyFilters(widget.selectFilters!);
-    //   print("Basic selected filters: ${widget.selectFilters}");
-    // } else if(args.selectedFilters != null){
-    //   futurePosts = postService.applyFilters(args.selectedFilters!);
-    //   print("Basic selected filters: ${args.selectedFilters}");
-    // }
+    final auth = Provider.of<AuthProvider>(context);
+    futurePost = postService.getPostById(widget.id,auth.token);
+
     return SafeArea(
       top: false,
       bottom: false,
@@ -63,7 +65,9 @@ class _PostShowPage extends State<PostShowPage> {
 
           },
         ),
-        drawer: const SidebarDrawer(),
+        drawer: const SidebarDrawer(
+          currentIndex: AppRoutes.postIndex,
+        ),
         endDrawer: FiltersSidebarDrawer(
           futureFilters: futureFilters,
           futurePost: futurePost,
@@ -108,7 +112,11 @@ class _PostShowPage extends State<PostShowPage> {
                     future: futurePost,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-
+                        if(!firstLoaded) {
+                          likesCount = snapshot.data!.likesCount;
+                          isLikedByCurrentUser = snapshot.data!.isLikedByCurrentUser!;
+                          firstLoaded = true;
+                        }
                         return _buildPostDetail(snapshot.data!);
                       }
                       return const Center(
@@ -126,6 +134,7 @@ class _PostShowPage extends State<PostShowPage> {
 
 
   Widget _buildPostDetail(Post post) {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     return Column(
         children: [
           Container(
@@ -149,7 +158,7 @@ class _PostShowPage extends State<PostShowPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  (post.imageUrl!=null || post.imageUrl!.isEmpty) ? CustomImageView(
+                  (post.imageUrl!=null && post.imageUrl!.isNotEmpty) ? CustomImageView(
                     url: post.imageUrl,
                     height: getVerticalSize(240.00,),
                     width: getHorizontalSize(336.00,),
@@ -218,21 +227,16 @@ class _PostShowPage extends State<PostShowPage> {
                                       size: 20,
                                     );
                                   },
-                                  likeCount: post.likesCount,
-                                  onTap: onLikeButtonTapped,
-                                  // countBuilder: (int count, bool isLiked, String text) {
-                                  //   var color = isLiked ? Colors.deepPurpleAccent : Colors.grey;
-                                  //   if (count == 0) {
-                                  //     return Text(
-                                  //       "love",
-                                  //       style: TextStyle(color: color),
-                                  //     );
-                                  //
-                                  //   return Text(
-                                  //     text,
-                                  //     style: TextStyle(color: color),
-                                  //   );
-                                  // },
+                                  isLiked: isLikedByCurrentUser,
+                                  likeCount: likesCount,
+                                  onTap: (value) async {
+                                    if(auth.isAuthenticated){
+                                      return await onLikeButtonTapped(auth.token);
+                                    } else {
+                                      _showAuthAlertDialog();
+                                      return value;
+                                    }
+                                  },
                                 ),
                               ]
                           ),
@@ -294,7 +298,6 @@ class _PostShowPage extends State<PostShowPage> {
       children: tagsList,
     );
   }
-
   Widget _buildAuthor(Post post){
     if(post.author == null){
       return Container(
@@ -367,22 +370,54 @@ class _PostShowPage extends State<PostShowPage> {
       ),
     );
   }
-
   Widget _buildCommentList({required int commentsCount}){
     return CommentList(
       service: commentService,
       commentsCount: commentsCount,
       postId: widget.id,
+      showAuthAlertDialog: _showAuthAlertDialog,
     );
   }
+  Future<bool> onLikeButtonTapped(String token) async {
+    Map<String,dynamic> resp = await likeService.likePost(token);
+    setState(() {
+      likesCount = resp['count'];
+      isLikedByCurrentUser = resp['status'];
+    });
+    return !resp['status'];
+  }
 
-  Future<bool> onLikeButtonTapped(bool isLiked) async{
-    /// send your request here
-    // final bool success= await sendRequest();
-
-    /// if failed, you can do nothing
-    // return success? !isLiked:isLiked;
-    print("Like");
-    return !isLiked;
+  Future<void> _showAuthAlertDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Login Required'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Please login'),
+                Text('To make an action.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Go to Login'),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.authLogin);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

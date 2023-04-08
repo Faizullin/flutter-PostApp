@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:post_app/core/app_export.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
@@ -10,6 +11,9 @@ class PostService {
 
   PostService({this.authProvider});
 
+  String sortColumn = '';
+  String sortOrder = '';
+
 
   int _currentPage = 1;
   void setPage(int page) {
@@ -17,8 +21,15 @@ class PostService {
   }
   int get currentPage => _currentPage;
 
-  Future<Post> getPostById(String id) async {
-    final response = await http.get(Uri.parse('${Env.baseUrl}/api/post/$id'));
+  Future<Post> getPostById(String id, String token) async {
+    final response = await http.get(
+      Uri.parse('${Env.baseUrl}/api/post/$id'),
+      headers: <String, String>{
+        'Context-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json'
+      },
+    );
     if (response.statusCode == 200) {
       return Post.fromJson(jsonDecode(response.body));
     } else {
@@ -40,18 +51,31 @@ class PostService {
 
 
   Future<Post> store(Map<String, dynamic> body,String token) async {
-    final response = await http.post(
-      //Uri.parse('${Env.baseUrl}/post'),
-      Uri.parse('${Env.baseUrl}/api/post'),
-      headers: <String, String>{
-        'Context-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json'
-      },
-      body: jsonEncode(body),
+    var request = http.MultipartRequest('POST',
+      Uri.parse('${Env.baseUrl}/api/post/create'),
     );
+    body.forEach((key, value) {
+      if(value is String || value is int || value is List) {
+        request.fields[key] = value;
+      }
+    });
+    var file = body['image'];
+    // final imageStream = http.ByteStream(file.openRead());
+    // final imageLength = await file.length();
+    // final imageUpload = http.MultipartFile('image', imageStream, imageLength,
+    //     filename: 'copper.jpg', contentType: MediaType('image', 'jpeg'));
+    request.files.add(http.MultipartFile.fromBytes('picture', File(file!.path).readAsBytesSync(),filename: file!.path));
+    request.headers.addAll({
+      'Context-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json'
+    });
+
+    var response = await request.send();
+    print("response $response");
+
     if (response.statusCode == 200) {
-      return Post.fromJson(jsonDecode(response.body));
+      return Post.fromJson(jsonDecode('{}'));
     } else {
       throw Exception('Failed to load album');
     }
@@ -77,7 +101,7 @@ class PostService {
       url += "tag[$i]=${filters.tags[i].slug}&";
     }
     if(filters.searchQuery != null && filters.searchQuery!.isNotEmpty){
-      url += "title=${filters.searchQuery}&";
+      url += "search=${filters.searchQuery}&";
     }
     final response = await http.get(
       Uri.parse(url),
@@ -104,9 +128,15 @@ class PostService {
     }
   }
 
-  Future<List<Post>> addToFiltersAndApply(Map<String,String> body) async {
+  Future<List<Post>> addToFiltersAndApply(Map<String,String> body, String token) async {
+    sortColumn = body['sort_field']!;
     final response = await http.get(
-      Uri.parse('${Env.baseUrl}/api/post?sort_order=${body['sort_order']}&sort_column=${body['sort_column']}'),
+      Uri.parse('${Env.baseUrl}/api/post?sort_field=$sortColumn'),//?sort_order=${body['sort_order']}&sort_column=${body['sort_column']}'),
+      headers: <String, String>{
+        'Context-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json'
+      },
     );
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);

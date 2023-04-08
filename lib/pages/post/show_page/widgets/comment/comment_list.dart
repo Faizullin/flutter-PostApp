@@ -11,8 +11,9 @@ class CommentList extends StatefulWidget{
   final CommentService service;
   final int commentsCount;
   final String postId;
+  final Function showAuthAlertDialog;
 
-  const CommentList({super.key, required this.service,required this.commentsCount,required this.postId,});
+  const CommentList({super.key, required this.service,required this.commentsCount,required this.postId,required this.showAuthAlertDialog});
 
   @override
   State<CommentList> createState() => _CommentList();
@@ -32,7 +33,7 @@ class _CommentList extends State<CommentList> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             comments = snapshot.data!;
-
+            final auth = Provider.of<AuthProvider>(context, listen: false);
             return  Padding(
               padding: getPadding(
                 left: 20,
@@ -43,6 +44,12 @@ class _CommentList extends State<CommentList> {
                 children: [
                   CommentCreateForm(
                     service: widget.service,
+                    showAuthAlertDialog: widget.showAuthAlertDialog,
+                    updateComments: () {
+                      setState(() {
+
+                      });
+                    },
                   ),
                   SizedBox(
                     height: getVerticalSize(63),
@@ -63,12 +70,24 @@ class _CommentList extends State<CommentList> {
                       return CommentItem(
                         comment: comments[index],
                         onReplyButtonPress: (BuildContext context, Comment replyComment) async {
+                          if(!auth.isAuthenticated){
+                            widget.showAuthAlertDialog();
+                            return;
+                          }
                           _showReplyDialog(context, replyComment);
                         },
                         onEditButtonPress: (BuildContext context, Comment comment) async {
+                          if(!auth.isAuthenticated){
+                            widget.showAuthAlertDialog();
+                            return;
+                          }
                           _showEditDialog(context, comment);
                         },
                         onDeleteButtonPress: (BuildContext context, Comment comment) async {
+                          if(!auth.isAuthenticated){
+                            widget.showAuthAlertDialog();
+                            return;
+                          }
                           _showDeleteDialog(context, comment);
                         },
                       );
@@ -93,8 +112,6 @@ class _CommentList extends State<CommentList> {
     final TextEditingController controller = TextEditingController(
         text: '',
     );
-
-
     showDialog(
       context: context,
       builder: (context) {
@@ -126,6 +143,7 @@ class _CommentList extends State<CommentList> {
               onPressed: () {
                 _storeReply(comment, controller.text).then((){
                   Navigator.pop(context);
+                  setState(() {});
                 });
               },
               child: const Text('Save'),
@@ -175,8 +193,8 @@ class _CommentList extends State<CommentList> {
                     'id': comment.id,
                     'message': controller.text,
                   },auth.token).then((value) {
-                    setState(() {});
                     Navigator.pop(context);
+                    setState(() {});
                   });
                 }
               },
@@ -209,8 +227,8 @@ class _CommentList extends State<CommentList> {
                 widget.service.delete({
                   'id': comment.id,
                 },auth.token).then((value) {
-                  setState(() {});
                   Navigator.pop(context);
+                  setState(() {});
                 });
               },
               child: const Text('Delete'),

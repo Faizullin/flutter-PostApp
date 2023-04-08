@@ -4,11 +4,8 @@ import 'package:post_app/models/category.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
 import 'package:post_app/models/tag.dart';
-import 'package:post_app/pages/post/index_page/widgets/filters_sidebar_drawer/multi_select.dart';
+import 'package:post_app/widgets/filters_sidebar_drawer/multi_select.dart';
 import 'package:post_app/services/post_service.dart';
-
-
-
 
 
 class FiltersSidebarDrawer extends StatefulWidget {

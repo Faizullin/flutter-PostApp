@@ -10,7 +10,6 @@ class AppRoutes {
   static const String aboutUs = '/about';
 
   static const String authLogin = '/auth/login';
-  static const String authRegister = '/auth/register';
   static const String authProfile = '/auth/profile';
 
   static const String postIndex = '/post';

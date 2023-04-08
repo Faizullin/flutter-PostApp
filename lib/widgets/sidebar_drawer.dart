@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 
 class SidebarDrawer extends StatelessWidget {
   final Color? backgroundColor;
-  const SidebarDrawer({super.key,this.backgroundColor,});
+  final String? currentIndex;
+
+  const SidebarDrawer({super.key,this.backgroundColor,this.currentIndex,});
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +47,7 @@ class SidebarDrawer extends StatelessWidget {
           if(!auth.isAuthenticated)
             ListTile(
               title: const Text('Login'),
+              selected: currentIndex == AppRoutes.authLogin,
               leading: const Icon(Icons.login),
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.authLogin);
@@ -53,6 +56,7 @@ class SidebarDrawer extends StatelessWidget {
           if(auth.isAuthenticated)
             ListTile(
               title: const Text('Profile'),
+              selected: currentIndex == AppRoutes.authProfile,
               leading: const Icon(Icons.account_box),
               onTap: ()  {
                 Navigator.pushNamed(context, AppRoutes.authProfile);
@@ -69,6 +73,7 @@ class SidebarDrawer extends StatelessWidget {
             ),
           ListTile(
             title: const Text('About'),
+            selected: currentIndex == AppRoutes.aboutUs,
             leading: const Icon(Icons.info),
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.aboutUs);
@@ -76,13 +81,15 @@ class SidebarDrawer extends StatelessWidget {
           ),
           ListTile(
             title: const Text('Post'),
-            leading: const Icon(Icons.post_add),
+            selected: currentIndex == AppRoutes.postIndex,
+            leading: const Icon(Icons.list),
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.postIndex);
             },
           ),
           ListTile(
             title: const Text('Create Post'),
+            selected: currentIndex == AppRoutes.postCreate,
             leading: const Icon(Icons.post_add),
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.postCreate);
@@ -96,6 +103,16 @@ class SidebarDrawer extends StatelessWidget {
               Navigator.of(context).pop();
             },
           ),
+          if(auth.isAuthenticated)
+            ListTile(
+              trailing: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout'),
+              onTap: () {
+                auth.logout().then((value) {
+                  Navigator.of(context).pop();
+                });
+              },
+            ),
         ],
       ),
     );

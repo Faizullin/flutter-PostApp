@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:post_app/core/app_export.dart';
 import 'package:post_app/models/user.dart';
+import 'package:post_app/models/user_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -14,7 +15,8 @@ class AuthProvider with ChangeNotifier {
   String get token => _token;
   bool get isAuthenticated => _isAuthenticated;
 
-  Future<User> getUser() async {
+
+  Future<UserData> getUser() async {
     final response = await http.get(
       Uri.parse('${Env.baseUrl}/api/user'),
       headers: {
@@ -23,10 +25,8 @@ class AuthProvider with ChangeNotifier {
       },
     );
     if (response.statusCode == 200) {
-
       final data = json.decode(response.body);
-      User user = User.fromJson(data);
-      //notifyListeners();
+      UserData user = UserData.fromJson(data);
       return user;
     } else {
       throw Exception('Error getting user');
@@ -42,12 +42,11 @@ class AuthProvider with ChangeNotifier {
 
     if(response.statusCode == 200) {
       final data = json.decode(response.body);
-
-      _token = data['accessToken'];
+      _token = data['token'];
       _isAuthenticated = true;
 
-      user = await getUser();
-
+      final userData = await getUser();
+      user = User(id: userData.id, name: userData.name, email: userData.email);
 
       var prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
@@ -66,9 +65,15 @@ class AuthProvider with ChangeNotifier {
       };
     } else if(response.statusCode == 422) {
       final data = json.decode(response.body);
+      String errorsMessage = '';
+      if(data['errors'].values.first is List){
+        errorsMessage = '${data['errors'].values.first.first}';
+      } else if (data['errors'].values.first is String) {
+        errorsMessage = data['errors'].values.first;
+      }
       return {
         'success': false,
-        'errors': data['errors'].values.first[0],
+        'errors': errorsMessage,
       };
     }
     throw Exception("Error in singning in");

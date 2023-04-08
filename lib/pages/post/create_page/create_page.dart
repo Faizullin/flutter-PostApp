@@ -9,6 +9,7 @@ import 'package:post_app/core/app_export.dart';
 import 'package:post_app/models/category.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/tag.dart';
+import 'package:post_app/pages/auth/login_page.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/post_service.dart';
 import 'package:post_app/widgets/app_bar/appbar_title.dart';
@@ -97,39 +98,41 @@ class _PostCreatePage extends State<PostCreatePage> {
     return Container(
       margin: const EdgeInsets.all(10),
       child: SingleChildScrollView(
-        child: Column(
-          children: [
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
             InputBlock(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text('Title'),
-                  TextField(
-                    controller: titleController,
-                  ),
-                ],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text('Title'),
+                TextField(
+                  controller: titleController,
+                ),
+              ],
             ),
-            InputBlock(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Description'),
-                  TextField(
-                    controller: descriptionController,
-                  ),
-                ],
-              ),
+          ),
+          InputBlock(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Description'),
+                TextField(
+                  controller: descriptionController,
+                ),
+              ],
             ),
-            (!showFeatureImage) ? InputBlock(
-              child: ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from gallery'),
-                onTap: () {
-                  _uploadImage(crop:true);
-                },
-              ),
-            ) : InputBlock(
+          ),
+          (!showFeatureImage) ? InputBlock(
+            child: ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                _uploadImage(crop:true);
+              },
+            ),
+          ) : InputBlock(
               child: Column(
                 children: [
                   ListTile(
@@ -144,104 +147,104 @@ class _PostCreatePage extends State<PostCreatePage> {
                 ],
               )
 
-            ),
+          ),
 
 
-            FutureBuilder<Filters>(
-              future: futureFilters,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Column(
-                    children: [
-                      InputBlock(
-                        child: Row(
-                          children: [
-                            const Text('Category'),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            DropdownButton(
-                              items: snapshot.data!.categories
-                                  .map<DropdownMenuItem<String>>((
-                                  Category category) {
-                                return DropdownMenuItem(
-                                  value: '${category.id}',
-                                  child: Text(category.title),
-                                );
-                              }).toList(),
-                              onChanged: (String? value) {
-                                setState(() {
-                                  selectedCategoryValue = value;
-                                });
-                              },
-                              value: selectedCategoryValue,
-                            ),
-                          ],
-                        ),
-                      ),
-                      InputBlock(
-                        child: MultiSelectDialogField<Tag>(
-                          key: _multiSelectKey,
-                          onConfirm: (values) {
-                            setState(() {
-                              selectedTagValues = values;
-                            });
-                          },
-                          searchable: true,
-                          listType: MultiSelectListType.CHIP,
-                          dialogWidth: MediaQuery
-                              .of(context)
-                              .size
-                              .width * 0.7,
-                          items: snapshot.data!.tags
-                              .map((tag) =>
-                              MultiSelectItem<Tag>(tag, tag.title))
-                              .toList(),
-                          chipDisplay: MultiSelectChipDisplay(
-                            onTap: (item) {
-                              setState(() {
-                                selectedTagValues.remove(item);
-                              });
-                              _multiSelectKey.currentState!.validate();
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                } else if (snapshot.hasError) {
-                  return Text('${snapshot.error}');
-                }
+          FutureBuilder<Filters>(
+            future: futureFilters,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
                 return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: const [CircularProgressIndicator()],
+                  children: [
+                    InputBlock(
+                      child: Row(
+                        children: [
+                          const Text('Category'),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          DropdownButton(
+                            items: snapshot.data!.categories
+                                .map<DropdownMenuItem<String>>((
+                                Category category) {
+                              return DropdownMenuItem(
+                                value: '${category.id}',
+                                child: Text(category.title),
+                              );
+                            }).toList(),
+                            onChanged: (String? value) {
+                              setState(() {
+                                selectedCategoryValue = value;
+                              });
+                            },
+                            value: selectedCategoryValue,
+                          ),
+                        ],
+                      ),
+                    ),
+                    InputBlock(
+                      child: MultiSelectDialogField<Tag>(
+                        key: _multiSelectKey,
+                        onConfirm: (values) {
+                          setState(() {
+                            selectedTagValues = values;
+                          });
+                        },
+                        searchable: true,
+                        listType: MultiSelectListType.CHIP,
+                        dialogWidth: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.7,
+                        items: snapshot.data!.tags
+                            .map((tag) =>
+                            MultiSelectItem<Tag>(tag, tag.title))
+                            .toList(),
+                        chipDisplay: MultiSelectChipDisplay(
+                          onTap: (item) {
+                            setState(() {
+                              selectedTagValues.remove(item);
+                            });
+                            _multiSelectKey.currentState!.validate();
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
                 );
-              },
+              } else if (snapshot.hasError) {
+                return Text('${snapshot.error}');
+              }
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [CircularProgressIndicator()],
+              );
+            },
+          ),
+          InputBlock(
+            child: Column(
+              children: [
+                QuillToolbar.basic(controller: bodyController),
+                QuillEditor.basic(
+                  controller: bodyController,
+                  readOnly: false,
+                ),
+              ],
             ),
-            InputBlock(
-              child: Column(
-                children: [
-                  QuillToolbar.basic(controller: bodyController),
-                  QuillEditor.basic(
-                    controller: bodyController,
-                    readOnly: false,
-                  ),
-                ],
-              ),
-            ),
+          ),
           ],
+        ),
         ),
       ),
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     if (!auth.isAuthenticated) {
-      Navigator.pushReplacementNamed(context, AppRoutes.authLogin);
+      return const LoginPage();
     }
     return SafeArea(
       child: Scaffold(
@@ -268,7 +271,9 @@ class _PostCreatePage extends State<PostCreatePage> {
             ),
           ],
         ),
-        drawer: const SidebarDrawer(),
+        drawer: const SidebarDrawer(
+          currentIndex: AppRoutes.postCreate,
+        ),
 
         body: _buildAuth(),
       ),
@@ -276,8 +281,9 @@ class _PostCreatePage extends State<PostCreatePage> {
   }
 
   void _save(String token) async {
+    final deltaJson = bodyController.document.toDelta().toJson();
     final bodyConverter = QuillDeltaToHtmlConverter(
-      List.castFrom(bodyController.document.toDelta().toJson()),
+      List.castFrom(deltaJson),
       ConverterOptions.forEmail(),
     );
     if (_formKey.currentState!.validate()) {

@@ -4,13 +4,15 @@ import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
 import 'package:post_app/pages/post/index_page/models/search_result.dart';
 import 'package:post_app/pages/post/index_page/widgets/sort_dropdown.dart';
+import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/post_service.dart';
-import 'package:post_app/pages/post/index_page/widgets/filters_sidebar_drawer/filters_sidebar_drawer.dart';
+import 'package:post_app/widgets/filters_sidebar_drawer/filters_sidebar_drawer.dart';
 import 'package:post_app/pages/post/index_page/widgets/post_item.dart';
 import 'package:post_app/widgets/app_bar/appbar_title.dart';
 import 'package:post_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:post_app/widgets/sidebar_drawer.dart';
 import 'package:post_app/widgets/breadcrumb.dart';
+import 'package:provider/provider.dart';
 
 
 
@@ -54,16 +56,11 @@ class _PostIndexPage extends State<PostIndexPage> {
   @override
   void initState() {
     super.initState();
-    //final args = ModalRoute.of(context)!.settings.arguments as PostIndexArguments;
-    // if(widget.selectFilters != null ){
-    //   futurePosts = postService.applyFilters(widget.selectFilters!);
-    // } else if(args.selectedFilters != null){
-    //   futurePosts = postService.applyFilters(args.selectedFilters!);
-    // }
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context,listen: false);
     final args = ModalRoute.of(context)!.settings.arguments != null ? ModalRoute.of(context)!.settings.arguments as PostIndexArguments : PostIndexArguments();
     if(widget.selectFilters != null ){
       futurePosts = postService.applyFilters(widget.selectFilters!);
@@ -120,7 +117,9 @@ class _PostIndexPage extends State<PostIndexPage> {
                   //margin: getMargin(left: 20, top: 18, bottom: 17)
               ),
             ]),
-        drawer: const SidebarDrawer(),
+        drawer: const SidebarDrawer(
+          currentIndex: AppRoutes.postIndex,
+        ),
         endDrawer: FiltersSidebarDrawer(
           futureFilters: futureFilters,
           selectedFilters: selectFilters,
@@ -154,12 +153,15 @@ class _PostIndexPage extends State<PostIndexPage> {
                 SizedBox(
                   height: getVerticalSize(12),
                 ),
-                PostSortDropdown(onSortChange: (String value){
-                  print("On sort change $value");
-                  postService.addToFiltersAndApply({
-                    'sort_field': 'value',
-                  });
-                }),
+                PostSortDropdown(
+                  onSortChange: (String value){
+                    setState(() {
+                      futurePosts = postService.addToFiltersAndApply({
+                        'sort_field': value,
+                      }, auth.token,);
+                    });
+                  }
+                ),
                 SizedBox(
                   height: getVerticalSize(12),
                 ),
@@ -169,7 +171,6 @@ class _PostIndexPage extends State<PostIndexPage> {
                     right: 20,
                   ),
                   child: Column(
-
                     children: [
                       FutureBuilder<List<Post>>(
                         future: futurePosts,
@@ -183,12 +184,10 @@ class _PostIndexPage extends State<PostIndexPage> {
                                   itemBuilder: (context, index) {
                                     return PostItem(
                                       post: snapshot.data![index],
+                                      canEdit: postService.sortColumn == 'my',
                                     );
                                   },
                                 ),
-                                // Pagination(
-                                //   postService: postService
-                                // ),
                               ],
                             );
                           } else if (snapshot.hasError) {

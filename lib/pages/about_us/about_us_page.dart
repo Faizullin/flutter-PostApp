@@ -34,9 +34,10 @@ class _AboutUsPage extends State<AboutUsPage> {
             ),
             title: AppbarTitle(text: "Home", margin: getMargin(left: 22)),
         ),
-        drawer: const SidebarDrawer(),
+        drawer: const SidebarDrawer(
+          currentIndex: AppRoutes.aboutUs,
+        ),
         body: SizedBox(
-          //width: double.maxFinite,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -45,7 +46,7 @@ class _AboutUsPage extends State<AboutUsPage> {
                   child: Container(
                     padding: getPadding(
                       left: 9,
-                      top: 174,
+                      top: 20,
                       right: 9,
                     ),
                     child: Column(
@@ -130,7 +131,6 @@ class _AboutUsPage extends State<AboutUsPage> {
                           ),
                           margin: getMargin(
                             top: 20,
-                            bottom: 211,
                           ),
                           child: Text(
                             "Ut fugiat ut sunt quia veniam. Voluptate perferendis perspiciatis quod nisi et. Placeat debitis quia recusandae odit et consequatur voluptatem. Dignissimos pariatur consectetur fugiat voluptas ea.\nTemporibus nihil enim deserunt sed ea. Provident sit expedita aut cupiditate nihil vitae quo officia vel. Blanditiis eligendi possimus et in cum. Quidem eos ut sint rem veniam qui. Ut ut repellendus nobis tempore doloribus debitis explicabo similique sit. Accusantium sed ut omnis beatae neque deleniti repellendus.",

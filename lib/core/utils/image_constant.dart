@@ -5,7 +5,7 @@ class ImageConstant {
 
   static String imgSearch = 'assets/images/img_search.svg';
 
-  static String imgAboutUsLogo = 'assets/images/img_about_us_logo.svg';
+  static String imgAboutUsLogo = 'assets/images/img_about_us_logo.png';
 
   static String imgUnknown = 'assets/images/img_unknown.jpg';
 }

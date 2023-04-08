@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:post_app/core/app_export.dart';
+import 'package:post_app/pages/post/index_page/models/sort_option.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -12,23 +13,29 @@ class PostSortDropdown extends StatefulWidget {
 }
 
 class _PostSortDropdownState extends State<PostSortDropdown> {
-  String _currentSort = 'Latest';
+  String _currentSort = 'most_recent';
 
-  final List<String> _sortOptions = ['Latest', 'Oldest', ];
+  final List<SortOption> _sortOptions = [
+    const SortOption(label: 'Latest', slug: 'most_recent'),
+    const SortOption(label: 'Oldest',slug: 'most_old'),
+  ];
 
   @override
   void initState() {
     super.initState();
     final auth = Provider.of<AuthProvider>(context,listen: false,);
     if(auth.isAuthenticated){
-      _sortOptions.addAll(['My posts', 'Most Liked']);
+      _sortOptions.addAll([
+        const SortOption(label: 'My posts', slug: 'my'),
+        const SortOption(label: 'Most Liked', slug: 'most_liked'),
+      ]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: getHorizontalSize(100),
+      width: getHorizontalSize(200),
       padding: getPadding(
         left: 20,
         right: 20,
@@ -44,10 +51,10 @@ class _PostSortDropdownState extends State<PostSortDropdown> {
           });
           widget.onSortChange(newValue!);
         },
-        items: _sortOptions.map((sortOption) {
+        items: _sortOptions.map((SortOption sortOption) {
           return DropdownMenuItem(
-            value: sortOption,
-            child: Text(sortOption),
+            value: sortOption.slug,
+            child: Text(sortOption.label),
           );
         }).toList(),
       ),
