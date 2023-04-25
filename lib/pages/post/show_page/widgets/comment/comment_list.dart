@@ -33,6 +33,7 @@ class _CommentList extends State<CommentList> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             comments = snapshot.data!;
+            final int commentsCount = widget.service.totalCount;
             final auth = Provider.of<AuthProvider>(context, listen: false);
             return  Padding(
               padding: getPadding(
@@ -55,7 +56,7 @@ class _CommentList extends State<CommentList> {
                     height: getVerticalSize(63),
                   ),
                   Text(
-                    "${widget.commentsCount} Comments",
+                    "$commentsCount Comments",
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.left,
                     style: AppStyle.txtInterBold22,

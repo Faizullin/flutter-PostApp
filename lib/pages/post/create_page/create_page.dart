@@ -10,6 +10,7 @@ import 'package:post_app/models/category.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/tag.dart';
 import 'package:post_app/pages/auth/login_page.dart';
+import 'package:post_app/pages/post/index_page/index_page.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/post_service.dart';
 import 'package:post_app/widgets/app_bar/appbar_title.dart';
@@ -20,9 +21,11 @@ import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 
 class InputBlock extends StatelessWidget {
   final Widget child;
+  final String? error;
   const InputBlock({
     super.key,
     required this.child,
+    this.error,
   });
 
   @override
@@ -47,7 +50,8 @@ class _PostCreatePage extends State<PostCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final PostService postService = PostService();
   late Future<Filters> futureFilters = postService.getAllFilters();
-
+  late Map<String,dynamic> _errors;
+  late String _errorMessage;
 
   bool showFeatureImage = false;
   XFile? _pickedImageFile;
@@ -102,139 +106,137 @@ class _PostCreatePage extends State<PostCreatePage> {
           key: _formKey,
           child: Column(
             children: [
-            InputBlock(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text('Title'),
-                TextField(
-                  controller: titleController,
-                ),
-              ],
-            ),
-          ),
-          InputBlock(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Description'),
-                TextField(
-                  controller: descriptionController,
-                ),
-              ],
-            ),
-          ),
-          (!showFeatureImage) ? InputBlock(
-            child: ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
-              onTap: () {
-                _uploadImage(crop:true);
-              },
-            ),
-          ) : InputBlock(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.photo_library),
-                    title: const Text('Choose from gallery'),
-                    onTap: () {
-                      _uploadImage(crop:true);
-                    },
-                  ),
-                  SizedBox(height: getVerticalSize(10),),
-                  _image(),
-                ],
-              )
-
-          ),
-
-
-          FutureBuilder<Filters>(
-            future: futureFilters,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                  children: [
-                    InputBlock(
-                      child: Row(
-                        children: [
-                          const Text('Category'),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          DropdownButton(
-                            items: snapshot.data!.categories
-                                .map<DropdownMenuItem<String>>((
-                                Category category) {
-                              return DropdownMenuItem(
-                                value: '${category.id}',
-                                child: Text(category.title),
-                              );
-                            }).toList(),
-                            onChanged: (String? value) {
-                              setState(() {
-                                selectedCategoryValue = value;
-                              });
-                            },
-                            value: selectedCategoryValue,
-                          ),
-                        ],
-                      ),
-                    ),
-                    InputBlock(
-                      child: MultiSelectDialogField<Tag>(
-                        key: _multiSelectKey,
-                        onConfirm: (values) {
-                          setState(() {
-                            selectedTagValues = values;
-                          });
-                        },
-                        searchable: true,
-                        listType: MultiSelectListType.CHIP,
-                        dialogWidth: MediaQuery
-                            .of(context)
-                            .size
-                            .width * 0.7,
-                        items: snapshot.data!.tags
-                            .map((tag) =>
-                            MultiSelectItem<Tag>(tag, tag.title))
-                            .toList(),
-                        chipDisplay: MultiSelectChipDisplay(
-                          onTap: (item) {
-                            setState(() {
-                              selectedTagValues.remove(item);
-                            });
-                            _multiSelectKey.currentState!.validate();
-                          },
-                        ),
-                      ),
+              InputBlock(
+                error: _errors['title'],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Text('Title'),
+                    TextField(
+                      controller: titleController,
                     ),
                   ],
-                );
-              } else if (snapshot.hasError) {
-                return Text('${snapshot.error}');
-              }
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [CircularProgressIndicator()],
-              );
-            },
-          ),
-          InputBlock(
-            child: Column(
-              children: [
-                QuillToolbar.basic(controller: bodyController),
-                QuillEditor.basic(
-                  controller: bodyController,
-                  readOnly: false,
                 ),
-              ],
             ),
+              InputBlock(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Description'),
+                    TextField(
+                      controller: descriptionController,
+                    ),
+                  ],
+                ),
+              ),
+              (!showFeatureImage) ? InputBlock(
+                child: ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Choose from gallery'),
+                  onTap: () {
+                    _uploadImage(crop:true);
+                  },
+                ),
+              ) : InputBlock(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.photo_library),
+                      title: const Text('Choose from gallery'),
+                      onTap: () {
+                        _uploadImage(crop:true);
+                      },
+                    ),
+                    SizedBox(height: getVerticalSize(10),),
+                    _image(),
+                  ],
+                )
+              ),
+              FutureBuilder<Filters>(
+                future: futureFilters,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Column(
+                      children: [
+                        InputBlock(
+                          child: Row(
+                            children: [
+                              const Text('Category'),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              DropdownButton(
+                                items: snapshot.data!.categories
+                                    .map<DropdownMenuItem<String>>((
+                                    Category category) {
+                                  return DropdownMenuItem(
+                                    value: '${category.id}',
+                                    child: Text(category.title),
+                                  );
+                                }).toList(),
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    selectedCategoryValue = value;
+                                  });
+                                },
+                                value: selectedCategoryValue,
+                              ),
+                            ],
+                          ),
+                        ),
+                        InputBlock(
+                          child: MultiSelectDialogField<Tag>(
+                            key: _multiSelectKey,
+                            onConfirm: (values) {
+                              setState(() {
+                                selectedTagValues = values;
+                              });
+                            },
+                            searchable: true,
+                            listType: MultiSelectListType.CHIP,
+                            dialogWidth: MediaQuery
+                                .of(context)
+                                .size
+                                .width * 0.7,
+                            items: snapshot.data!.tags
+                                .map((tag) =>
+                                MultiSelectItem<Tag>(tag, tag.title))
+                                .toList(),
+                            chipDisplay: MultiSelectChipDisplay(
+                              onTap: (item) {
+                                setState(() {
+                                  selectedTagValues.remove(item);
+                                });
+                                _multiSelectKey.currentState!.validate();
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('${snapshot.error}');
+                  }
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const [CircularProgressIndicator()],
+                  );
+                },
+              ),
+              InputBlock(
+                child: Column(
+                  children: [
+                    QuillToolbar.basic(controller: bodyController),
+                    QuillEditor.basic(
+                      controller: bodyController,
+                      readOnly: false,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          ],
-        ),
         ),
       ),
     );
@@ -287,8 +289,7 @@ class _PostCreatePage extends State<PostCreatePage> {
       ConverterOptions.forEmail(),
     );
     if (_formKey.currentState!.validate()) {
-      postService.store(
-        {
+      postService.store({
           'title': titleController.text,
           'description': descriptionController.text,
           'category': selectedCategoryValue,
@@ -297,7 +298,27 @@ class _PostCreatePage extends State<PostCreatePage> {
           'body': bodyConverter.convert(),
         },
         token,
-      );
+      ).then((Map<String, dynamic> result ) {
+        if(result['success'] == false) {
+          setState(() {
+            if (result.containsKey('errors')) {
+              _errors = result['errors'];
+            } else if (result.containsKey('errorMessage')) {
+              _errorMessage = result['errorMessage'];
+            }
+          });
+        } else {
+          _errors.clear();
+          _errorMessage = '';
+          Navigator.pushNamed(context, AppRoutes.postIndex,arguments: PostIndexArguments(
+            selectedFilters: SelectFilters(
+              categories: [],
+              tags: [],
+              sortColumn: 'my',
+            ),
+          ));
+        }
+      });
     }
   }
 

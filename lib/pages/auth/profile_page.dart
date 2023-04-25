@@ -49,7 +49,7 @@ class _ProfilePage extends State<ProfilePage> {
               scaffoldKey.currentState!.openDrawer();
             },
           ),
-          title: AppbarTitle(text: "ProfilePage", margin: getMargin(left: 22)),
+          title: AppbarTitle(text: "Profile", margin: getMargin(left: 22)),
           backgroundColor: ColorConstant.lightBlueA200,
           actions: [
             IconButton(

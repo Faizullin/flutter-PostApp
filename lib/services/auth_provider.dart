@@ -57,7 +57,7 @@ class AuthProvider with ChangeNotifier {
       return {
         'success': true,
       };
-    }  else if(response.statusCode == 401) {
+    } else if(response.statusCode == 401) {
       final data = json.decode(response.body);
       return {
         'success': false,
@@ -77,7 +77,6 @@ class AuthProvider with ChangeNotifier {
       };
     }
     throw Exception("Error in singning in");
-
   }
 
   Future<void> logout() async {

@@ -5,13 +5,15 @@ import 'package:http/http.dart' as http;
 
 class CommentService {
   final String postId;
-  const CommentService({required this.postId});
+  int totalCount = 0;
+  CommentService({required this.postId});
 
 
   Future<List<Comment>> getAllPostComments() async {
     final response = await http.get(Uri.parse('${Env.baseUrl}/api/comment?post_id=$postId'));
     if (response.statusCode == 200) {
       Map<String,dynamic> jsonResponse = json.decode(response.body);
+      totalCount = jsonResponse['meta']['total'];
       return jsonResponse['data'].map<Comment>((data) => Comment.fromJson(data)).toList();
     } else {
       throw Exception('Failed to load album');

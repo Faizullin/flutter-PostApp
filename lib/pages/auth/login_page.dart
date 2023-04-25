@@ -105,12 +105,12 @@ class _LoginPage extends State<LoginPage> {
                   child: Text(
                     'Forgot Password',
                     style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: getFontSize(15),
+                      color: Colors.blue,
+                      fontSize: getFontSize(15),
                     ),
                   ),
                   onPressed: () async {
-                    const String url = 'https://www.example.com';
+                    const String url = '${Env.baseUrl}/forgot-password';
                     if (await canLaunchUrlString(url)) {
                       await launchUrlString(url);
                     } else {
@@ -129,8 +129,8 @@ class _LoginPage extends State<LoginPage> {
                     child: Text(
                       'Login',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: getFontSize(25),
+                        color: Colors.white,
+                        fontSize: getFontSize(25),
                       ),
                     ),
                     onPressed: () {
@@ -166,7 +166,7 @@ class _LoginPage extends State<LoginPage> {
                     ),
                   ),
                   onTap: () async {
-                    const String url = 'https://www.example.com';
+                    const String url = '${Env.baseUrl}/register';
                     if (await canLaunchUrlString(url)) {
                       await launchUrlString(url);
                     } else {

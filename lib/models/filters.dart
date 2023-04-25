@@ -22,11 +22,13 @@ class SelectFilters {
   List<Category> categories = [];
   List<Tag> tags = [];
   String? searchQuery;
+  String sortColumn;
 
   SelectFilters({
     required this.categories,
     required this.tags,
     this.searchQuery,
+    this.sortColumn = 'most_recent',
   });
 
   factory SelectFilters.fromJson(Map<String, dynamic> json) {

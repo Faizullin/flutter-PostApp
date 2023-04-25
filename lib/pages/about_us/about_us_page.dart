@@ -32,7 +32,7 @@ class _AboutUsPage extends State<AboutUsPage> {
                 scaffoldKey.currentState!.openDrawer();
               },
             ),
-            title: AppbarTitle(text: "Home", margin: getMargin(left: 22)),
+            title: AppbarTitle(text: "About", margin: getMargin(left: 22)),
         ),
         drawer: const SidebarDrawer(
           currentIndex: AppRoutes.aboutUs,

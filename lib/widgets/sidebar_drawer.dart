@@ -62,15 +62,6 @@ class SidebarDrawer extends StatelessWidget {
                 Navigator.pushNamed(context, AppRoutes.authProfile);
               },
             ),
-          if(auth.isAuthenticated)
-            ListTile(
-              title: const Text('Logout'),
-              leading: const Icon(Icons.logout),
-              onTap: ()  {
-                auth.logout();
-                Navigator.pushNamedAndRemoveUntil(context, AppRoutes.authLogin,(Route<dynamic> route) => false);
-              },
-            ),
           ListTile(
             title: const Text('About'),
             selected: currentIndex == AppRoutes.aboutUs,

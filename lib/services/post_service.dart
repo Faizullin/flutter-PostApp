@@ -14,13 +14,6 @@ class PostService {
   String sortColumn = '';
   String sortOrder = '';
 
-
-  int _currentPage = 1;
-  void setPage(int page) {
-    _currentPage = page;
-  }
-  int get currentPage => _currentPage;
-
   Future<Post> getPostById(String id, String token) async {
     final response = await http.get(
       Uri.parse('${Env.baseUrl}/api/post/$id'),
@@ -37,8 +30,8 @@ class PostService {
     }
   }
 
-  Future<List<Post>> getAllPosts() async {
-    final response = await http.get(Uri.parse('${Env.baseUrl}/api/post'));
+  Future<List<Post>> getAllPosts([int page = 1]) async {
+    final response = await http.get(Uri.parse('${Env.baseUrl}/api/post?page=$page'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -50,40 +43,52 @@ class PostService {
 
 
 
-  Future<Post> store(Map<String, dynamic> body,String token) async {
+  Future<Map<String,dynamic>> store(Map<String, dynamic> body,String token) async {
     var request = http.MultipartRequest('POST',
       Uri.parse('${Env.baseUrl}/api/post/create'),
     );
     body.forEach((key, value) {
       if(value is String || value is int || value is List) {
-        request.fields[key] = value;
+        request.fields[key] = value.toString();
       }
     });
     var file = body['image'];
-    // final imageStream = http.ByteStream(file.openRead());
-    // final imageLength = await file.length();
-    // final imageUpload = http.MultipartFile('image', imageStream, imageLength,
-    //     filename: 'copper.jpg', contentType: MediaType('image', 'jpeg'));
-    request.files.add(http.MultipartFile.fromBytes('picture', File(file!.path).readAsBytesSync(),filename: file!.path));
+    if(file != null) {
+      request.files.add(http.MultipartFile.fromBytes('picture', File(file!.path).readAsBytesSync(),filename: file!.path));
+
+    }
     request.headers.addAll({
       'Context-Type': 'application/json; charset=UTF-8',
       'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     });
-
     var response = await request.send();
-    print("response $response");
+    var responsed = await http.Response.fromStream(response);
+    Map<String,dynamic> responseData = jsonDecode(responsed.body);
+
+    print("response $responseData");
 
     if (response.statusCode == 200) {
-      return Post.fromJson(jsonDecode('{}'));
-    } else {
-      throw Exception('Failed to load album');
+      return {
+        'success': true,
+        'post': Post.fromJson(responseData),
+      };
+    } else if(response.statusCode == 401) {
+      return {
+        'success': false,
+        'errorMessage': responseData['error'],
+      };
+    } else if(response.statusCode == 422) {
+      return {
+        'success': false,
+        'errors': responseData['errors'],
+      };
     }
+    throw Exception("Error in singning in");
   }
 
   Future<Filters> getAllFilters() async {
     final response = await http.get(Uri.parse('${Env.baseUrl}/api/post/filters'));
-
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonResponse = json.decode(response.body);
       return Filters.fromJson(jsonResponse);
@@ -92,16 +97,19 @@ class PostService {
     }
   }
 
-  Future<List<Post>> applyFilters(SelectFilters filters) async {
-    String url = '${Env.baseUrl}/api/post?';
+  Future<List<Post>> applyFilters(SelectFilters filters, [int page = 1]) async {
+    String url = '${Env.baseUrl}/api/post?page=$page&';
     if (filters.categories.isNotEmpty) {
       url += "category=${filters.categories[filters.categories.length - 1].slug}&";
     }
     for (int i = 0; i < filters.tags.length; i++) {
       url += "tag[$i]=${filters.tags[i].slug}&";
     }
-    if(filters.searchQuery != null && filters.searchQuery!.isNotEmpty){
+    if(filters.searchQuery is String){
       url += "search=${filters.searchQuery}&";
+    }
+    if(filters.sortColumn.isNotEmpty) {
+      url += "sort_field=${filters.sortColumn}&";
     }
     final response = await http.get(
       Uri.parse(url),
@@ -116,9 +124,9 @@ class PostService {
     }
   }
 
-  Future<List<Post>> applySearchSubmit(String value) async {
+  Future<List<Post>> applySearchSubmit(String value,[int page = 1]) async {
     final response = await http.get(
-      Uri.parse('${Env.baseUrl}/api/post?search=$value'),
+      Uri.parse('${Env.baseUrl}/api/post?search=$value&page=$page'),
     );
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -128,10 +136,10 @@ class PostService {
     }
   }
 
-  Future<List<Post>> addToFiltersAndApply(Map<String,String> body, String token) async {
+  Future<List<Post>> addToFiltersAndApply(Map<String,String> body, String token, [int page = 1]) async {
     sortColumn = body['sort_field']!;
     final response = await http.get(
-      Uri.parse('${Env.baseUrl}/api/post?sort_field=$sortColumn'),//?sort_order=${body['sort_order']}&sort_column=${body['sort_column']}'),
+      Uri.parse('${Env.baseUrl}/api/post?sort_field=$sortColumn&page=$page'),
       headers: <String, String>{
         'Context-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',

@@ -74,7 +74,6 @@ class _PostShowPage extends State<PostShowPage> {
           selectedFilters: selectFilters,
           service: postService,
           onPressed: (SelectFilters filters) {
-
             setState(() {
               selectFilters.categories = filters.categories;
               selectFilters.tags = filters.tags;
