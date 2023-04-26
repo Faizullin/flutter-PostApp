@@ -4,7 +4,6 @@ import 'package:post_app/core/app_export.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
 import 'package:post_app/pages/post/index_page/widgets/sort_dropdown.dart';
-import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/post_service.dart';
 import 'package:post_app/widgets/filters_sidebar_drawer/filters_sidebar_drawer.dart';
 import 'package:post_app/pages/post/index_page/widgets/post_item.dart';
@@ -12,9 +11,6 @@ import 'package:post_app/widgets/app_bar/appbar_title.dart';
 import 'package:post_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:post_app/widgets/sidebar_drawer.dart';
 import 'package:post_app/widgets/breadcrumb.dart';
-import 'package:provider/provider.dart';
-
-
 
 class PostIndexArguments {
   final SelectFilters? selectedFilters;

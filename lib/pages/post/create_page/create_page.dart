@@ -10,6 +10,7 @@ import 'package:post_app/models/category.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/tag.dart';
 import 'package:post_app/pages/auth/login_page.dart';
+import 'package:post_app/pages/post/create_page/widgets/input_block.dart';
 import 'package:post_app/pages/post/index_page/index_page.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/post_service.dart';
@@ -18,25 +19,6 @@ import 'package:post_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:post_app/widgets/sidebar_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
-
-class InputBlock extends StatelessWidget {
-  final Widget child;
-  final String? error;
-  const InputBlock({
-    super.key,
-    required this.child,
-    this.error,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: child,
-    );
-  }
-}
-
 
 class PostCreatePage extends StatefulWidget {
   const PostCreatePage({Key? key}) : super(key: key);
@@ -107,29 +89,22 @@ class _PostCreatePage extends State<PostCreatePage> {
           child: Column(
             children: [
               InputBlock(
-                error: _errors['title'],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const Text('Title'),
-                    TextField(
-                      controller: titleController,
-                    ),
-                  ],
+                labelText: 'Title',
+                error: _errors['title'].first,
+                child: TextField(
+                  controller: titleController,
                 ),
-            ),
+              ),
               InputBlock(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Description'),
-                    TextField(
-                      controller: descriptionController,
-                    ),
-                  ],
+                labelText: 'Description',
+                error: _errors['description'].first,
+                child: TextField(
+                  controller: descriptionController,
                 ),
               ),
               (!showFeatureImage) ? InputBlock(
+                labelText: 'Logo image',
+                error: _errors['image'].first,
                 child: ListTile(
                   leading: const Icon(Icons.photo_library),
                   title: const Text('Choose from gallery'),
@@ -138,19 +113,19 @@ class _PostCreatePage extends State<PostCreatePage> {
                   },
                 ),
               ) : InputBlock(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.photo_library),
-                      title: const Text('Choose from gallery'),
-                      onTap: () {
-                        _uploadImage(crop:true);
-                      },
-                    ),
-                    SizedBox(height: getVerticalSize(10),),
-                    _image(),
-                  ],
-                )
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.photo_library),
+                    title: const Text('Choose from gallery'),
+                    onTap: () {
+                      _uploadImage(crop:true);
+                    },
+                  ),
+                  SizedBox(height: getVerticalSize(8),),
+                  ErrorText(_errors['image'].first),
+                  SizedBox(height: getVerticalSize(10),),
+                  _image(),
+                ],
               ),
               FutureBuilder<Filters>(
                 future: futureFilters,
@@ -159,6 +134,7 @@ class _PostCreatePage extends State<PostCreatePage> {
                     return Column(
                       children: [
                         InputBlock(
+                          error: _errors['category'].first,
                           child: Row(
                             children: [
                               const Text('Category'),
@@ -185,6 +161,7 @@ class _PostCreatePage extends State<PostCreatePage> {
                           ),
                         ),
                         InputBlock(
+                          error: _errors['tags'].first,
                           child: MultiSelectDialogField<Tag>(
                             key: _multiSelectKey,
                             onConfirm: (values) {
@@ -224,16 +201,19 @@ class _PostCreatePage extends State<PostCreatePage> {
                   );
                 },
               ),
+              SizedBox(
+                height: getVerticalSize(3),
+              ),
               InputBlock(
-                child: Column(
-                  children: [
-                    QuillToolbar.basic(controller: bodyController),
-                    QuillEditor.basic(
-                      controller: bodyController,
-                      readOnly: false,
-                    ),
-                  ],
-                ),
+                children: [
+                  const Text('Body'),
+                  QuillToolbar.basic(controller: bodyController),
+                  QuillEditor.basic(
+                    controller: bodyController,
+                    readOnly: false,
+                  ),
+                  ErrorText(_errors['body'].first),
+                ],
               ),
             ],
           ),

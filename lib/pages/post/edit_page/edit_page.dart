@@ -10,6 +10,7 @@ import 'package:post_app/models/category.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
 import 'package:post_app/models/tag.dart';
+import 'package:post_app/pages/post/create_page/widgets/input_block.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/services/post_service.dart';
 import 'package:post_app/widgets/app_bar/appbar_title.dart';
@@ -17,23 +18,6 @@ import 'package:post_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:post_app/widgets/sidebar_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
-
-class InputBlock extends StatelessWidget {
-  final Widget child;
-  const InputBlock({
-    super.key,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: child,
-    );
-  }
-}
-
 
 class PostEditPage extends StatefulWidget {
   final String id;
@@ -50,7 +34,7 @@ class _PostEditPage extends State<PostEditPage> {
   final PostService postService = PostService();
   late Future<Filters> futureFilters = postService.getAllFilters();
   late Future<Post> futurePost;
-
+  late Map<String,dynamic> _errors;
 
   bool showFeatureImage = false;
   XFile? _pickedImageFile;
@@ -115,28 +99,22 @@ class _PostEditPage extends State<PostEditPage> {
               return Column(
                 children: [
                   InputBlock(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const Text('Title'),
-                        TextField(
-                          controller: titleController,
-                        ),
-                      ],
+                    labelText: 'Title',
+                    error: _errors['title'].first,
+                    child: TextField(
+                      controller: titleController,
                     ),
                   ),
                   InputBlock(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Description'),
-                        TextField(
-                          controller: descriptionController,
-                        ),
-                      ],
+                    labelText: 'Description',
+                    error: _errors['description'].first,
+                    child: TextField(
+                      controller: descriptionController,
                     ),
                   ),
                   (!showFeatureImage) ? InputBlock(
+                    labelText: 'Logo image',
+                    error: _errors['image'].first,
                     child: ListTile(
                       leading: const Icon(Icons.photo_library),
                       title: const Text('Choose from gallery'),
@@ -145,22 +123,20 @@ class _PostEditPage extends State<PostEditPage> {
                       },
                     ),
                   ) : InputBlock(
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.photo_library),
-                            title: const Text('Choose from gallery'),
-                            onTap: () {
-                              _uploadImage(crop:true);
-                            },
-                          ),
-                          SizedBox(height: getVerticalSize(10),),
-                          _image(),
-                        ],
-                      )
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.photo_library),
+                        title: const Text('Choose from gallery'),
+                        onTap: () {
+                          _uploadImage(crop:true);
+                        },
+                      ),
+                      SizedBox(height: getVerticalSize(8),),
+                      ErrorText(_errors['image'].first),
+                      SizedBox(height: getVerticalSize(10),),
+                      _image(),
+                    ],
                   ),
-
-
                   FutureBuilder<Filters>(
                     future: futureFilters,
                     builder: (context, snapshot) {
@@ -170,6 +146,7 @@ class _PostEditPage extends State<PostEditPage> {
                         return Column(
                           children: [
                             InputBlock(
+                              error: _errors['category'].first,
                               child: Row(
                                 children: [
                                   const Text('Category'),
@@ -196,6 +173,7 @@ class _PostEditPage extends State<PostEditPage> {
                               ),
                             ),
                             InputBlock(
+                              error: _errors['tags'].first,
                               child: MultiSelectDialogField<Tag>(
                                 key: _multiSelectKey,
                                 onConfirm: (values) {
@@ -218,17 +196,6 @@ class _PostEditPage extends State<PostEditPage> {
                                 ),
                               ),
                             ),
-                            InputBlock(
-                              child: Column(
-                                children: [
-                                  QuillToolbar.basic(controller: bodyController),
-                                  QuillEditor.basic(
-                                    controller: bodyController,
-                                    readOnly: false,
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         );
                       } else if (snapshot.hasError) {
@@ -240,6 +207,20 @@ class _PostEditPage extends State<PostEditPage> {
                         children: const [CircularProgressIndicator()],
                       );
                     },
+                  ),
+                  InputBlock(
+                    children: [
+                      const Text('Body'),
+                      QuillToolbar.basic(controller: bodyController),
+                      QuillEditor.basic(
+                        controller: bodyController,
+                        readOnly: false,
+                      ),
+                      SizedBox(
+                        height: getVerticalSize(3),
+                      ),
+                      ErrorText(_errors['body'].first),
+                    ],
                   ),
                 ],
               );
