@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:post_app/core/app_export.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SidebarDrawer extends StatelessWidget {
   final Color? backgroundColor;
@@ -82,8 +83,14 @@ class SidebarDrawer extends StatelessWidget {
             title: const Text('Create Post'),
             selected: currentIndex == AppRoutes.postCreate,
             leading: const Icon(Icons.post_add),
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.postCreate);
+            onTap: () async {
+              const String url = '${Env.baseUrl}/post/create';
+              if (await canLaunchUrlString(url)) {
+                await launchUrlString(url);
+              } else {
+                throw 'Could not launch $url';
+              }
+              //Navigator.pushNamed(context, AppRoutes.postCreate);
             },
           ),
           const Divider(height: 10.0, color: Colors.black),

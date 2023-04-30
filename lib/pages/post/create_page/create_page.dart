@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
@@ -36,7 +34,6 @@ class _PostCreatePage extends State<PostCreatePage> {
   final PostService postService = PostService();
   late Future<Filters> futureFilters = postService.getAllFilters();
   late Map<String,dynamic> _errors = {};
-  late String _errorMessage;
 
   bool showFeatureImage = false;
   XFile? _pickedImageFile;
@@ -280,19 +277,19 @@ class _PostCreatePage extends State<PostCreatePage> {
           'image': _croppedImageFile ?? _pickedImageFile,
           'body': bodyConverter.convert(),
         },
-        token,''
+        token,
       ).then((Map<String, dynamic> result ) {
         if(result['success'] == false) {
           setState(() {
             if (result.containsKey('errors')) {
               _errors = result['errors'];
             } else if (result.containsKey('errorMessage')) {
-              _errorMessage = result['errorMessage'];
+              // _errorMessage = result['errorMessage'];
             }
           });
         } else {
           _errors.clear();
-          _errorMessage = '';
+          // _errorMessage = '';
           Navigator.pushNamed(context, AppRoutes.postIndex,arguments: PostIndexArguments(
             selectedFilters: SelectFilters(
               categories: [],
@@ -340,6 +337,7 @@ class _PostCreatePage extends State<PostCreatePage> {
       ],
     );
     if (croppedFile != null) {
+
       setState(() {
         _croppedImageFile = croppedFile;
         showFeatureImage = true;
@@ -349,37 +347,9 @@ class _PostCreatePage extends State<PostCreatePage> {
 
   Future<void> _uploadImage({bool crop = false, ImageSource source = ImageSource.gallery}) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
-
     if (pickedFile != null) {
-      FormData formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(
-          pickedFile.path,
-          filename: "image.jpg",
-        ),
-      });
-
-      Dio dio = Dio();
-      // dio.options.connectTimeout = 30000; //30s
-      // dio.options.receiveTimeout = 30000; //30s
-      // dio.options.sendTimeout = 30000; //30s
-
-      dio.interceptors.add(LogInterceptor(responseBody: false, requestBody: true));
-
-      dio.post(
-        '${Env.baseUrl}/api/post/create',
-        data: formData,
-        onSendProgress: (int sent, int total) {
-          // setState(() {
-          //   _uploadProgress = sent / total;
-          // });
-        },
-      ).then((response) {
-        // setState(() {
-        //   _isUploading = false;
-        // });
-      });
       if(crop){
-        //await _cropImage(pickedFile);
+        await _cropImage(pickedFile);
       } else {
         setState(() {
           _pickedImageFile = pickedFile;

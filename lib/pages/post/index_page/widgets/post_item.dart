@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:post_app/models/post.dart';
 import 'package:post_app/core/app_export.dart';
-import 'package:post_app/pages/post/edit_page/edit_page.dart';
 import 'package:post_app/pages/post/show_page/show_page.dart';
 import 'package:post_app/services/auth_provider.dart';
 import 'package:post_app/widgets/custom_image_view.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class PostItem extends StatelessWidget {
   final Post post;
@@ -154,13 +154,19 @@ class PostItem extends StatelessWidget {
                       top: 15,
                     ),
                     child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => PostEditPage(
-                            id: post.id.toString(),
-                            title: "Edit Post: ${post.title}",
-                          ),
-                        ));
+                      onPressed: () async {
+                        // Navigator.push(context, MaterialPageRoute(
+                        //   builder: (context) => PostEditPage(
+                        //     id: post.id.toString(),
+                        //     title: "Edit Post: ${post.title}",
+                        //   ),
+                        // ));
+                        String url = '${Env.baseUrl}/post/${post.id}/edit';
+                        if (await canLaunchUrlString(url)) {
+                          await launchUrlString(url);
+                        } else {
+                          throw 'Could not launch $url';
+                        }
                       },
                       child: const Text("Edit"),
                     ),
