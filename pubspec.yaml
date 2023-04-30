@@ -53,6 +53,7 @@ dependencies:
   build_runner: ^2.3.3
   like_button: ^2.0.5
   infinite_scroll_pagination: ^3.2.0
+  dio: ^5.1.1
 
 dev_dependencies:
   flutter_test:

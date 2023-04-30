@@ -18,6 +18,7 @@ class _PostSortDropdownState extends State<PostSortDropdown> {
   final List<SortOption> _sortOptions = [
     const SortOption(label: 'Latest', slug: 'most_recent'),
     const SortOption(label: 'Oldest',slug: 'most_old'),
+    const SortOption(label: 'Most Liked', slug: 'most_liked'),
   ];
 
   @override
@@ -27,7 +28,6 @@ class _PostSortDropdownState extends State<PostSortDropdown> {
     if(auth.isAuthenticated){
       _sortOptions.addAll([
         const SortOption(label: 'My posts', slug: 'my'),
-        const SortOption(label: 'Most Liked', slug: 'most_liked'),
       ]);
     }
   }

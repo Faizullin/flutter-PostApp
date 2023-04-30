@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:post_app/core/app_export.dart';
 import 'package:post_app/models/filters.dart';
 import 'package:post_app/models/post.dart';
@@ -43,27 +45,47 @@ class PostService {
 
 
 
-  Future<Map<String,dynamic>> store(Map<String, dynamic> body,String token) async {
+  Future<Map<String,dynamic>> store(Map<String, dynamic> body,String token, [String _imagePath = '']) async {
     var request = http.MultipartRequest('POST',
       Uri.parse('${Env.baseUrl}/api/post/create'),
     );
+    if (kIsWeb) {
+      final bytes = await File(_imagePath).readAsBytes();
+      request.files.add(await http.MultipartFile.fromBytes('image', bytes,filename: 'image.jpg'));
+      // final response = await http.post(
+      //   Uri.parse('http://example.com/upload'),
+      //   headers: {'Content-Type': 'application/json'},
+      //   body: jsonEncode({'image': base64Encode(bytes)}),
+      // );
+      // return {
+      //
+      // };
+      //request.files.add(http.MultipartFile('image', file.readAsBytes().asStream(), filename: "image.jpg"));
+      // Uint8List bytes = await file.readAsBytes();
+      // var stream = http.ByteStream.fromBytes(bytes);
+      // var multipartFile = http.MultipartFile('image', stream, bytes.length, filename: 'cropped_image.jpg');
+      // request.files.add(multipartFile);
+    } else {
+      print("not web");
+    }
     body.forEach((key, value) {
-      if(value is String || value is int || value is List) {
+      if(key != 'image') {
         request.fields[key] = value.toString();
       }
     });
-    var file = body['image'];
-    if(file != null) {
-      request.files.add(http.MultipartFile.fromBytes('picture', File(file!.path).readAsBytesSync(),filename: file!.path));
-
-    }
+    // var tmp = File(t!.path);//.readAsBytesSync();
+    // print("add file $file ${file!.path} $tmp");
+    // if(file != null) {
+    //   //request.files.add(http.MultipartFile.fromBytes('image', tmp.readAsBytesSync(),filename: 'cropped_image.jpg'));
+    //   request.files.add( await http.MultipartFile.fromPath('image', tmp.path));
+    // }
     request.headers.addAll({
       'Context-Type': 'application/json; charset=UTF-8',
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
     });
-    var response = await request.send();
-    var responsed = await http.Response.fromStream(response);
+    final response = await request.send();
+    final responsed = await http.Response.fromStream(response);
     Map<String,dynamic> responseData = jsonDecode(responsed.body);
 
     print("response $responseData");
@@ -71,7 +93,7 @@ class PostService {
     if (response.statusCode == 200) {
       return {
         'success': true,
-        'post': Post.fromJson(responseData),
+        // 'post': Post.fromJson(responseData),
       };
     } else if(response.statusCode == 401) {
       return {

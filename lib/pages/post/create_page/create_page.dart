@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
@@ -32,7 +35,7 @@ class _PostCreatePage extends State<PostCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final PostService postService = PostService();
   late Future<Filters> futureFilters = postService.getAllFilters();
-  late Map<String,dynamic> _errors;
+  late Map<String,dynamic> _errors = {};
   late String _errorMessage;
 
   bool showFeatureImage = false;
@@ -90,21 +93,21 @@ class _PostCreatePage extends State<PostCreatePage> {
             children: [
               InputBlock(
                 labelText: 'Title',
-                error: _errors['title'].first,
+                error: _errors['title']?.first ?? '',
                 child: TextField(
                   controller: titleController,
                 ),
               ),
               InputBlock(
                 labelText: 'Description',
-                error: _errors['description'].first,
+                error: _errors['description']?.first ?? '',
                 child: TextField(
                   controller: descriptionController,
                 ),
               ),
               (!showFeatureImage) ? InputBlock(
                 labelText: 'Logo image',
-                error: _errors['image'].first,
+                error: _errors['image']?.first ?? '',
                 child: ListTile(
                   leading: const Icon(Icons.photo_library),
                   title: const Text('Choose from gallery'),
@@ -122,7 +125,7 @@ class _PostCreatePage extends State<PostCreatePage> {
                     },
                   ),
                   SizedBox(height: getVerticalSize(8),),
-                  ErrorText(_errors['image'].first),
+                  ErrorText(_errors['image']?.first ?? '',),
                   SizedBox(height: getVerticalSize(10),),
                   _image(),
                 ],
@@ -134,7 +137,7 @@ class _PostCreatePage extends State<PostCreatePage> {
                     return Column(
                       children: [
                         InputBlock(
-                          error: _errors['category'].first,
+                          error: _errors['category']?.first ?? '',
                           child: Row(
                             children: [
                               const Text('Category'),
@@ -161,7 +164,7 @@ class _PostCreatePage extends State<PostCreatePage> {
                           ),
                         ),
                         InputBlock(
-                          error: _errors['tags'].first,
+                          error: _errors['tags']?.first ?? '',
                           child: MultiSelectDialogField<Tag>(
                             key: _multiSelectKey,
                             onConfirm: (values) {
@@ -212,7 +215,7 @@ class _PostCreatePage extends State<PostCreatePage> {
                     controller: bodyController,
                     readOnly: false,
                   ),
-                  ErrorText(_errors['body'].first),
+                  ErrorText(_errors['body']?.first ?? '',),
                 ],
               ),
             ],
@@ -273,11 +276,11 @@ class _PostCreatePage extends State<PostCreatePage> {
           'title': titleController.text,
           'description': descriptionController.text,
           'category': selectedCategoryValue,
-          'tags': selectedTagValues.map((e) => e.id.toString()).toList(),
+          'tags[]': jsonEncode(selectedTagValues.map((e) => e.id.toInt()).toList()),//.join(','),
           'image': _croppedImageFile ?? _pickedImageFile,
           'body': bodyConverter.convert(),
         },
-        token,
+        token,''
       ).then((Map<String, dynamic> result ) {
         if(result['success'] == false) {
           setState(() {
@@ -310,11 +313,12 @@ class _PostCreatePage extends State<PostCreatePage> {
       compressQuality: 100,
       uiSettings: [
         AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: ColorConstant.deepOrange400,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
+          toolbarTitle: 'Cropper',
+          toolbarColor: ColorConstant.deepOrange400,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false
+        ),
         IOSUiSettings(
           title: 'Cropper',
         ),
@@ -345,9 +349,37 @@ class _PostCreatePage extends State<PostCreatePage> {
 
   Future<void> _uploadImage({bool crop = false, ImageSource source = ImageSource.gallery}) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
+
     if (pickedFile != null) {
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(
+          pickedFile.path,
+          filename: "image.jpg",
+        ),
+      });
+
+      Dio dio = Dio();
+      // dio.options.connectTimeout = 30000; //30s
+      // dio.options.receiveTimeout = 30000; //30s
+      // dio.options.sendTimeout = 30000; //30s
+
+      dio.interceptors.add(LogInterceptor(responseBody: false, requestBody: true));
+
+      dio.post(
+        '${Env.baseUrl}/api/post/create',
+        data: formData,
+        onSendProgress: (int sent, int total) {
+          // setState(() {
+          //   _uploadProgress = sent / total;
+          // });
+        },
+      ).then((response) {
+        // setState(() {
+        //   _isUploading = false;
+        // });
+      });
       if(crop){
-        await _cropImage(pickedFile);
+        //await _cropImage(pickedFile);
       } else {
         setState(() {
           _pickedImageFile = pickedFile;
